@@ -16,12 +16,12 @@ typedef struct ct {
 
 int main() {
     const int shift = 4;
-    struct pt *pth, *ptp, *ptt;
-    struct ct *cth, *ctp, *ctt;
+    struct pt *pth, *ptp, *ptt, *pc;
+    struct ct *cth, *ctp, *ctt, *cc;
     pth = malloc(sizeof(pt));
     cth = malloc(sizeof(ct));
-    ptt = malloc(sizeof(pt));
-    ctt = malloc(sizeof(ct));
+    ptt = NULL;
+    ctt = NULL;
     ptp = pth;
     ptp->next = ptt;
     ctp = cth;
@@ -170,6 +170,24 @@ input:
     printw("\n");
     getch();
     refresh();
+    ptp = pth->next;
+    ctp = cth->next;
+
+    while (ptp->next != ptt) {
+        pc = ptp;
+        ptp = ptp->next;
+        free(pc);
+    }
+    ptp = pth;
+    ptp->next = ptt;
+
+    while (ctp->next != ctt) {
+        cc = ctp;
+        ctp = ctp->next;
+        free(cc);
+    }
+    ctp = cth;
+    ctp->next = ctt;
 quit_check:
     printw("\nQuit or Return (\"Q\" or \"R\") : \n");
     order = getch();
