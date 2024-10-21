@@ -4,7 +4,7 @@
 #include <ncursesw/ncurses.h>
 #define LEVEL_LIMIT 60
 #define LOAD 0
-#define META 7
+#define META 8
 #define MAP_SIZE 30
 enum obj { BLANK = 0, WALL = 1, DESTINATION = 2, MAN = 3, BOX = 6, ROW_END = 9, UNEXPECTED = 100 };
 
@@ -48,20 +48,6 @@ bool moveLine(FILE *file, int lineNumber) {
     return true;
 }
 
-int get_score(FILE *file) {
-    char line[64];
-    int score;
-    fgets(line, sizeof(line), file);
-    if (line[0] == '\n') {
-        return 99999999;
-    }
-    if (sscanf(line, "Score: %d", &score) == 1) {
-        return score;
-    }
-    return 0;
-
-}
-
 unsigned short trans(char origin_char) {
     switch (origin_char) {
         case 'X':
@@ -92,8 +78,6 @@ bool load(FILE *file) {
         unsigned short line_lenth = 0;
         if (moveLine(file, META) == false) { return false; };
         line_lenth += META;
-        score[i] = get_score(file);
-        line_lenth += 1;
         for (int j = 0; j < MAP_SIZE; j++) {
             for (int k = 0; k < MAP_SIZE; k++) {
                 buffer = fgetc(file);
@@ -114,6 +98,37 @@ bool load(FILE *file) {
     }
     return true;
 }
+
+void refresh_score(bool read , bool write) {
+    FILE *file;
+    if (read) {
+        int level_num = 0;
+        int buffer = 0;
+        file = fopen("./score","r");
+        if (file != NULL) {
+            while (!feof(file)) {
+                fscanf(file,"%d:%d",&level_num,&buffer);
+                score[level_num]=buffer;
+            }
+
+        }
+        fclose(file);
+    }
+    if (write) {
+        file = fopen("./score","w");
+        for (int i = 0; i <LEVEL_LIMIT; i++) {
+            fprintf(file,"%d:%d\n",i,score[i]);
+        }
+        fclose(file);
+    }
+
+}
+void score_change(int level_count,int level_score) {
+    score[level_count]= level_score;
+    refresh_score(false,true);
+}
+
+
 unsigned short set_level(void) {
     clear();
     mvprintw(3, 5, "Enter a map number:");
@@ -277,7 +292,7 @@ void write_score(FILE *file,int level_score) {
     fflush(file);
     score[level_count]= level_score;
 }
-int play_level(FILE *file) {
+int play_level() {
     int level_score = 0;
     bool break_signal = false;
     int flag = 0;
@@ -318,7 +333,7 @@ int play_level(FILE *file) {
 
         if (break_signal) {
             if (level_score < score[level_count]) {
-                write_score(file,level_score);
+                score_change(level_count,level_score);
             }
 
 
@@ -327,27 +342,41 @@ int play_level(FILE *file) {
     }
 }
 
+// int get_score(FILE *file) {
+//     char line[64];
+//     int score;
+//     fgets(line, sizeof(line), file);
+//     if (line[0] == '\n') {
+//         return 99999999;
+//     }
+//     if (sscanf(line, "Score: %d", &score) == 1) {
+//         return score;
+//     }
+//     return 0;
+//
+// }
+
 int main() {
-    // initialize();
-    FILE *file;
-    if ((file = fopen("./map", "r+")) == NULL) {
+    initialize();
+    FILE *map_file;
+    if ((map_file = fopen("./map", "r+")) == NULL) {
         printf("Open File Failed");
         return -1;
     }
-    load(file);
+    load(map_file);
+    fclose(map_file);
+    refresh_score(true,false);
     initscr();
     keypad(stdscr,true);
     curs_set(FALSE);
     start_color();
     while (1) {
         level_count = set_level()-1;
-        if(play_level(file)==-1) {
+        if(play_level()==-1) {
             break;
         }
     }
 
-
-    fclose(file);
     endwin();
 
     return 0;
