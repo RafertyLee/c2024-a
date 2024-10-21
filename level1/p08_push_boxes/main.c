@@ -102,10 +102,14 @@ bool load(FILE *file) {
 void refresh_score(bool read , bool write) {
     FILE *file;
     if (read) {
+        bool flag = true;
         int level_num = 0;
         int buffer = 0;
         file = fopen("./score","r");
-        if (file != NULL) {
+        if ('\n' == fgetc(file)) {
+            flag = false;
+        }
+        if (file != NULL || flag) {
             while (!feof(file)) {
                 fscanf(file,"%d:%d",&level_num,&buffer);
                 score[level_num]=buffer;
