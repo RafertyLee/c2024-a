@@ -16,7 +16,7 @@ int main() {
     else if (number > 2) {
         for (int i = limit; i < number; i++) {
             if (number % i == 0) {
-                printf("%d is not prime\n", i);
+                printf("%d is not prime\n", number);
                 return 0;
             }
             else if (i == number - 1) {
