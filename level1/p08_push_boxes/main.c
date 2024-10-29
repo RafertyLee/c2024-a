@@ -106,10 +106,14 @@ void refresh_score(bool read , bool write) {
         int level_num = 0;
         int buffer = 0;
         file = fopen("./score","r");
+        if (file == NULL) {
+            fclose(file);
+            return;
+        }
         if ('\n' == fgetc(file)) {
             flag = false;
         }
-        if (file != NULL || flag) {
+        if (flag) {
             while (!feof(file)) {
                 fscanf(file,"%d:%d",&level_num,&buffer);
                 score[level_num]=buffer;
@@ -346,19 +350,6 @@ int play_level() {
     }
 }
 
-// int get_score(FILE *file) {
-//     char line[64];
-//     int score;
-//     fgets(line, sizeof(line), file);
-//     if (line[0] == '\n') {
-//         return 99999999;
-//     }
-//     if (sscanf(line, "Score: %d", &score) == 1) {
-//         return score;
-//     }
-//     return 0;
-//
-// }
 
 int main() {
     initialize();
